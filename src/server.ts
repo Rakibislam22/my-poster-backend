@@ -1,11 +1,30 @@
-import express, { type Express, type Request, type Response } from 'express';
+import { createApp } from './app';
+import { connectDB } from './config/db';
+import { env } from './config/env';
 
-const app: Express = express();
+const startServer = async () => {
+  await connectDB();
 
-app.get('/', (req: Request, res: Response) => {
-  res.send('Hello World!');
-});
+  const app = createApp();
 
-app.listen(3000, () => {
-  console.log('Server is running on port 3000');
+  const server = app.listen(env.PORT, () => {
+    console.log(`🚀 Server running in ${env.NODE_ENV} mode on http://localhost:${env.PORT}`);
+    console.log(`🩺 Health check available at http://localhost:${env.PORT}/api/health`);
+  });
+
+  const handleShutdown = async (signal: string) => {
+    console.log(`\n🛑 Received ${signal}. Shutting down gracefully...`);
+    server.close(() => {
+      console.log('💤 HTTP server closed.');
+      process.exit(0);
+    });
+  };
+
+  process.on('SIGINT', () => handleShutdown('SIGINT'));
+  process.on('SIGTERM', () => handleShutdown('SIGTERM'));
+};
+
+startServer().catch((err) => {
+  console.error('❌ Failed to start server:', err);
+  process.exit(1);
 });
