@@ -5,3 +5,10 @@ uploads/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Temporary dev/test scripts
+scripts/test*
+scripts/detect_*
+scripts/fit_*
+scripts/perfect_*
+scripts/create_transparent_*
