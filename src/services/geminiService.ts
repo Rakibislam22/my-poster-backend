@@ -84,34 +84,50 @@ class GeminiService {
   }
 
   private buildPrompt(params: SloganGenerationParams): string {
-    return `You are a master political copywriter and art director for authentic Bangladeshi posters.
-Your task is to generate concise, dignified, grammatically flawless Bengali text fields that fit perfectly into professional printing-press poster layouts (1200x1600 px).
+    return `You are the Lead Art Director and Chief Political Copywriter for authentic, professional Bangladeshi posters (1200x1600 px print-ready standard).
+Your mission is to generate punchy, dignified, grammatically flawless Bengali copy that fits into balanced graphic design slots without text overlapping, repetition, or overflow.
 
 POSTER SPECIFICATIONS:
 - Occasion Type: ${params.occasionType}
 - Candidate Name: ${params.candidateName}
-- Designation / Candidate Post: ${params.designation || 'Not specified'}
+- Designation / Role: ${params.designation || 'Not specified'}
 - Political Party / Organization: ${params.party || 'Not specified'}
 - Electoral Area / Constituency: ${params.area || 'Not specified'}
 - User Preferred Headline: ${params.userHeadline || 'None provided'}
 - Custom Notes / Instructions: ${params.customNotes || 'None'}
 
-CRITICAL FORMATTING & LAYOUT RULES:
-1. "headlineBangla": Must be concise, heroic, and punchy — strictly 4 to 8 Bengali words. Never write long paragraphs or sentences, as they will overflow the poster ribbon banner.
-   - For 'victory_day': Focus on 16th December Victory Day, martyrs, red-green patriotism (e.g., "১৬ই ডিসেম্বর মহান বিজয় দিবস উপলক্ষে বিনম্র শ্রদ্ধা").
-   - For 'campaign': Focus on the upcoming election, people's prayers and support (e.g., "আসন্ন জাতীয় সংসদ নির্বাচনে মনোনীত প্রার্থী").
-   - For 'eid': Focus on festive joy, peace and Eid Mubarak (e.g., "পবিত্র ঈদ-উল-ফিতর উপলক্ষে সবাইকে জানাই আন্তরিক শুভেচ্ছা ও ঈদ মোবারক").
-   - For 'condolence': Focus on solemn tribute, remembrance and prayers (e.g., "বিনম্র শ্রদ্ধা ও শোক প্রস্তাব — বিদেহী আত্মার মাগফিরাত কামনায়").
-2. "subtitleBangla": A complementary sub-slogan or area appeal (strictly 4 to 7 words, e.g., "${params.area ? params.area + ' আসনে ' : ''}জনগণের দোয়া ও সমর্থন প্রার্থী").
-3. "candidateCallout": Respectful address for the candidate name (e.g., "${params.candidateName}-কে" or "জননেতা ${params.candidateName}-কে").
-4. "campaignMarka": The official election symbol name in Bengali (e.g., "ধানের শীষ", "নৌকা", "লাঙ্গল", "দাঁড়িপাল্লা", "হাতপাখা" based on party/designation).
-5. "footerCreditBangla": Professional promoter line starting with "প্রচারে:" (e.g., "প্রচারে: ${params.party ? params.party + ' ও ' : ''}সর্বস্তরের সচেতন দেশপ্রেমিক কর্মীসমাজ").
+STRICT ART DIRECTION & COPY RULES:
+1. "headlineBangla" (Main Title):
+   - Strictly 3 to 6 words.
+   - For 'victory_day': Occasion name only, e.g., "১৬ই ডিসেম্বর মহান বিজয় দিবস".
+   - For 'campaign': Electoral appeal title, e.g., "আসন্ন জাতীয় সংসদ নির্বাচনে মনোনীত প্রার্থী".
+   - For 'eid': Festive greeting title, e.g., "পবিত্র ঈদ-উল-ফিতর মোবারক".
+   - For 'condolence': Solemn tribute title, e.g., "বিনম্র শ্রদ্ধা ও শোক প্রস্তাব".
+   - CRITICAL: Do NOT merge the tribute/sub-slogan into this field! Keep it short so it fits the top ribbon without wrapping into 3 lines.
+
+2. "subtitleBangla" (Secondary Slogan / Tribute):
+   - Strictly 3 to 6 words.
+   - For 'victory_day': e.g., "বীর শহীদদের প্রতি বিনম্র শ্রদ্ধা" or "বীর বাঙালির রক্তে রাঙানো অহংকার".
+   - For 'campaign': e.g., "${params.area ? params.area + ' আসনে ' : ''}জনগণের দোয়া ও সমর্থন প্রার্থী".
+   - For 'eid': e.g., "অনাবিল আনন্দ ও শান্তির শুভেচ্ছা".
+   - For 'condolence': e.g., "বিদেহী আত্মার মাগফিরাত কামনায়".
+   - CRITICAL CONSTRAINT: Must NEVER repeat any word that already appears in "headlineBangla"!
+
+3. "candidateCallout":
+   - For campaign: "${params.candidateName}-কে"
+   - For festive/condolence: "${params.candidateName}"
+
+4. "campaignMarka":
+   - The electoral symbol in Bengali (e.g., "ধানের শীষ", "নৌকা", "লাঙ্গল", "দাঁড়িপাল্লা", "হাতপাখা" based on party).
+
+5. "footerCreditBangla":
+   - Professional promoter line starting with "প্রচারে:", e.g., "প্রচারে: ${params.party ? params.party + ' ও ' : ''}সর্বস্তরের দেশপ্রেমিক কর্মীসমাজ".
 
 Return ONLY a valid JSON object matching this schema:
 {
-  "headlineBangla": "Strictly 4-8 words in authentic Bengali",
-  "subtitleBangla": "Strictly 4-7 words in authentic Bengali",
-  "candidateCallout": "Short name callout with -কে suffix if campaign",
+  "headlineBangla": "Concise 3-6 words main occasion title",
+  "subtitleBangla": "Unique 3-6 words sub-slogan (NO repetition of headline words)",
+  "candidateCallout": "Short candidate name callout",
   "campaignMarka": "Name of the election symbol in Bengali",
   "footerCreditBangla": "Promoter line starting with প্রচারে:"
 }`;

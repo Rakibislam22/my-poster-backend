@@ -4,6 +4,8 @@ import { env } from './config/env';
 
 const startServer = async () => {
   await connectDB();
+  const { seedDatabase } = await import('./utils/seedDatabase');
+  await seedDatabase(false);
 
   const app = createApp();
 
