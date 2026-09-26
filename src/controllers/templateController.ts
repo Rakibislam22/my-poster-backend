@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import mongoose from 'mongoose';
 import { Template } from '../models/Template';
 import { ApiResponse } from '../utils/apiResponse';
 import { CreateTemplateInput, UpdateTemplateInput } from '../validators/templateValidators';
@@ -22,7 +23,16 @@ export const getTemplates = async (req: Request, res: Response) => {
 export const getTemplateById = async (req: Request, res: Response) => {
   const { id } = req.params;
 
-  const template = await Template.findById(id);
+  let template = null;
+  if (mongoose.isValidObjectId(id)) {
+    template = await Template.findById(id);
+  }
+  if (!template) {
+    const cleanOccasion = id.replace(/^seed[-_]/i, '').replace(/[-]/g, '_');
+    template = await Template.findOne({
+      $or: [{ occasionType: cleanOccasion }, { occasionType: id }],
+    });
+  }
   if (!template) {
     return ApiResponse.notFound(res, 'Template not found');
   }

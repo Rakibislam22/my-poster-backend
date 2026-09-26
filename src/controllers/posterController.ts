@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import mongoose from 'mongoose';
 import { GenerationLog } from '../models/GenerationLog';
 import { Poster } from '../models/Poster';
 import { Template } from '../models/Template';
@@ -30,7 +31,23 @@ export const createPoster = async (
     useAiSlogans,
   } = req.body;
 
-  const template = await Template.findById(templateId);
+  let template = null;
+  if (mongoose.isValidObjectId(templateId)) {
+    template = await Template.findById(templateId);
+  }
+  if (!template) {
+    const cleanOccasion = templateId.replace(/^seed[-_]/i, '').replace(/[-]/g, '_');
+    template = await Template.findOne({
+      $or: [
+        { occasionType: cleanOccasion },
+        { occasionType: templateId },
+      ],
+    });
+  }
+  if (!template) {
+    template = await Template.findOne({ isActive: true });
+  }
+
   if (!template) {
     return ApiResponse.notFound(res, 'Specified template not found');
   }
