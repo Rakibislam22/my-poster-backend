@@ -26,6 +26,7 @@ export interface IPoster extends Document {
   generatedImageUrl?: string;
   previewUrl?: string;
   status: PosterStatus;
+  regenerationCount: number;
   errorMessage?: string;
   metadata?: Record<string, unknown>;
   createdAt: Date;
@@ -70,6 +71,10 @@ const PosterSchema = new Schema<IPoster>(
       enum: ['pending', 'processing', 'completed', 'failed'],
       default: 'pending',
       index: true,
+    },
+    regenerationCount: {
+      type: Number,
+      default: 0,
     },
     errorMessage: {
       type: String,

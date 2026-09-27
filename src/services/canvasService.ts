@@ -75,6 +75,7 @@ class CanvasService {
     candidate: { cx: number; cy: number; r: number };
     leaders: Array<{ cx: number; cy: number; r: number }>;
     banner: { cx: number; yName: number; yDes: number; angle: number };
+    headline: { cx: number; cy: number; maxWidth: number };
     defaultCredit: string;
     defaultDes: string;
   }> = {
@@ -86,6 +87,7 @@ class CanvasService {
           { cx: 1063, cy: 145, r: 92 },
         ],
         banner: { cx: 250, yName: 585, yDes: 630, angle: -0.05 },
+        headline: { cx: 930, cy: 695, maxWidth: 440 },
         defaultCredit: 'প্রচারে: সর্বস্তরের সচেতন ও দেশপ্রেমিক কর্মীসমাজ',
         defaultDes: 'ধানের শীষ মার্কায় ভোট দিন',
       },
@@ -97,6 +99,7 @@ class CanvasService {
           { cx: 1050, cy: 145, r: 92 },
         ],
         banner: { cx: 245, yName: 600, yDes: 645, angle: -0.04 },
+        headline: { cx: 930, cy: 695, maxWidth: 440 },
         defaultCredit: 'প্রচারে: সর্বস্তরের দেশপ্রেমিক জনগণ',
         defaultDes: 'সহ-সভাপতি পদপ্রার্থী',
       },
@@ -108,6 +111,7 @@ class CanvasService {
           { cx: 1055, cy: 155, r: 95 },
         ],
         banner: { cx: 240, yName: 620, yDes: 665, angle: -0.04 },
+        headline: { cx: 930, cy: 695, maxWidth: 440 },
         defaultCredit: 'শোক প্রকাশে: পরিবারবর্গ ও সর্বস্তরের শুভাকাঙ্ক্ষী',
         defaultDes: 'তাঁর বিদেহী আত্মার মাগফিরাত কামনা করছি',
       },
@@ -119,6 +123,7 @@ class CanvasService {
           { cx: 1060, cy: 150, r: 92 },
         ],
         banner: { cx: 245, yName: 625, yDes: 670, angle: -0.04 },
+        headline: { cx: 930, cy: 695, maxWidth: 440 },
         defaultCredit: 'শুভেচ্ছান্তে: সর্বস্তরের এলাকাবাসী',
         defaultDes: 'পবিত্র ঈদুল ফিতরের শুভেচ্ছা ও মোবারকবাদ',
       },
@@ -284,6 +289,125 @@ class CanvasService {
     ctx.shadowBlur = 8;
     ctx.shadowOffsetY = 2;
     ctx.fillText(credit, width / 2, 785);
+    ctx.restore();
+
+    // 4. Gemini AI Slogan / Headline in Bottom-Right Zone
+    if (formData.headlineBangla && formData.headlineBangla.trim()) {
+      const hlCfg = cfg.headline || { cx: 930, cy: 695, maxWidth: 440 };
+      this.drawBottomRightHeadline(ctx, formData.headlineBangla.trim(), hlCfg.cx, hlCfg.cy, hlCfg.maxWidth, occasion);
+    }
+  }
+
+  // --- 6. Gemini AI Polished Slogan / Headline at Bottom-Right ---
+  private drawBottomRightHeadline(
+    ctx: SKRSContext2D,
+    text: string,
+    cx: number,
+    cy: number,
+    maxWidth: number,
+    occasion: string = 'campaign'
+  ) {
+    ctx.save();
+
+    // 1. Determine best font size and multi-line word wrap
+    let fontSize = 23;
+    const words = text.split(/\s+/);
+
+    const testSplit = (size: number): string[] => {
+      ctx.font = `bold ${size}px "Hind Siliguri", sans-serif`;
+      const res: string[] = [];
+      let cur = '';
+      for (const w of words) {
+        const line = cur ? `${cur} ${w}` : w;
+        if (ctx.measureText(line).width <= maxWidth) {
+          cur = line;
+        } else {
+          if (cur) res.push(cur);
+          cur = w;
+        }
+      }
+      if (cur) res.push(cur);
+      return res;
+    };
+
+    let lines = testSplit(fontSize);
+    if (lines.length > 2) {
+      fontSize = 20;
+      lines = testSplit(fontSize);
+      if (lines.length > 2) {
+        fontSize = 18;
+        lines = testSplit(fontSize);
+      }
+    }
+
+    ctx.font = `bold ${fontSize}px "Hind Siliguri", sans-serif`;
+    const lineHeight = fontSize * 1.35;
+    const totalTextHeight = lines.length * lineHeight;
+
+    // 2. Measure max line width for badge
+    let maxLineWidth = 0;
+    for (const line of lines) {
+      const w = ctx.measureText(line).width;
+      if (w > maxLineWidth) maxLineWidth = w;
+    }
+
+    const paddingX = 24;
+    const paddingY = 10;
+    const boxW = Math.min(maxWidth + 40, maxLineWidth + paddingX * 2);
+    const boxH = totalTextHeight + paddingY * 2;
+    const boxX = cx - boxW / 2;
+    const boxY = cy - boxH / 2;
+
+    // 3. Draw sleek frosted badge with subtle gold or silver border
+    ctx.save();
+    ctx.beginPath();
+    const radius = 12;
+    ctx.moveTo(boxX + radius, boxY);
+    ctx.lineTo(boxX + boxW - radius, boxY);
+    ctx.quadraticCurveTo(boxX + boxW, boxY, boxX + boxW, boxY + radius);
+    ctx.lineTo(boxX + boxW, boxY + boxH - radius);
+    ctx.quadraticCurveTo(boxX + boxW, boxY + boxH, boxX + boxW - radius, boxY + boxH);
+    ctx.lineTo(boxX + radius, boxY + boxH);
+    ctx.quadraticCurveTo(boxX, boxY + boxH, boxX, boxY + boxH - radius);
+    ctx.lineTo(boxX, boxY + radius);
+    ctx.quadraticCurveTo(boxX, boxY, boxX + radius, boxY);
+    ctx.closePath();
+
+    // Dark semi-transparent pill backdrop
+    const isCondolence = occasion === 'condolence';
+    ctx.fillStyle = isCondolence ? 'rgba(15, 15, 15, 0.85)' : 'rgba(0, 24, 12, 0.75)';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+    ctx.shadowBlur = 10;
+    ctx.shadowOffsetY = 3;
+    ctx.fill();
+
+    // Subtle gold or silver border
+    ctx.strokeStyle = isCondolence ? 'rgba(255, 255, 255, 0.35)' : 'rgba(255, 215, 0, 0.45)';
+    ctx.lineWidth = 1.5;
+    ctx.shadowColor = 'transparent';
+    ctx.stroke();
+    ctx.restore();
+
+    // 4. Render crisp Bengali headline text inside pill
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    const startY = cy - totalTextHeight / 2 + lineHeight / 2;
+
+    for (let i = 0; i < lines.length; i++) {
+      const lineY = startY + i * lineHeight;
+      const lineText = lines[i];
+
+      ctx.save();
+      ctx.font = `bold ${fontSize}px "Hind Siliguri", sans-serif`;
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+      ctx.shadowBlur = 6;
+      ctx.shadowOffsetY = 2;
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillText(lineText, cx, lineY);
+      ctx.restore();
+    }
+
     ctx.restore();
   }
 

@@ -192,12 +192,42 @@ export const regeneratePoster = async (
     return ApiResponse.notFound(res, 'Template associated with poster not found');
   }
 
+  const MAX_RETRY_LIMIT = 3;
+  const currentRetries = poster.regenerationCount || 0;
+  if (currentRetries >= MAX_RETRY_LIMIT) {
+    return ApiResponse.badRequest(
+      res,
+      `পোস্টারটি পুনরায় তৈরি করার সর্বোচ্চ সীমা (${MAX_RETRY_LIMIT} বার) শেষ হয়ে গেছে।`
+    );
+  }
+
   if (req.body.candidateName) poster.formData.candidateName = req.body.candidateName;
   if (req.body.headlineBangla) poster.formData.headlineBangla = req.body.headlineBangla;
   if (req.body.designation !== undefined) poster.formData.designation = req.body.designation;
   if (req.body.party !== undefined) poster.formData.party = req.body.party;
   if (req.body.area !== undefined) poster.formData.area = req.body.area;
   if (req.body.footerCredit !== undefined) poster.formData.footerCredit = req.body.footerCredit;
+
+  if (req.body.useAiSlogans) {
+    try {
+      const aiResult = await geminiService.generatePosterCopy({
+        occasionType: template.occasionType,
+        candidateName: poster.formData.candidateName,
+        designation: poster.formData.designation,
+        party: poster.formData.party,
+        area: poster.formData.area,
+        userHeadline: req.body.headlineBangla || poster.formData.headlineBangla,
+      });
+      if (aiResult.headlineBangla) {
+        poster.formData.headlineBangla = aiResult.headlineBangla;
+      }
+      if (aiResult.footerCreditBangla && !req.body.footerCredit) {
+        poster.formData.footerCredit = aiResult.footerCreditBangla;
+      }
+    } catch (err) {
+      console.warn('AI enhancement fallback on regeneration:', err);
+    }
+  }
 
   if (req.body.uploadedPhotos) {
     if (req.body.uploadedPhotos.candidatePhoto) {
@@ -220,12 +250,20 @@ export const regeneratePoster = async (
 
     const uploadResult = await storageService.saveBuffer(posterBuffer, 'posters', 'png');
 
+    poster.regenerationCount = currentRetries + 1;
     poster.generatedImageUrl = uploadResult.url;
     poster.previewUrl = uploadResult.url;
     poster.status = 'completed';
     await poster.save();
 
-    return ApiResponse.success(res, poster, 'Poster regenerated successfully');
+    return ApiResponse.success(
+      res,
+      {
+        ...poster.toObject(),
+        remainingRetries: Math.max(0, MAX_RETRY_LIMIT - poster.regenerationCount),
+      },
+      `পোস্টারটি সফলভাবে পুনরায় তৈরি হয়েছে (${poster.regenerationCount}/${MAX_RETRY_LIMIT})`
+    );
   } catch (error: any) {
     poster.status = 'failed';
     poster.errorMessage = error.message;
