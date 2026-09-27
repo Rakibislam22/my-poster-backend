@@ -17,6 +17,8 @@ const envSchema = z.object({
   GEMINI_API_KEY: z.string().optional().default(''),
 });
 
+export type Env = z.infer<typeof envSchema>;
+
 const parsedEnv = envSchema.safeParse(process.env);
 
 if (!parsedEnv.success) {
@@ -24,4 +26,5 @@ if (!parsedEnv.success) {
   process.exit(1);
 }
 
-export const env = parsedEnv.data;
+export const env = parsedEnv.data as Env;
+

@@ -88,7 +88,7 @@ class StorageService {
         }
       );
 
-      uploadStream.end(buffer);
+      (uploadStream as any).end(buffer);
     });
   }
 
