@@ -31,7 +31,7 @@ export const createPoster = async (
     useAiSlogans,
   } = req.body;
 
-  let template = null;
+  let template: any = null;
   if (mongoose.isValidObjectId(templateId)) {
     template = await Template.findById(templateId);
   }
@@ -39,8 +39,8 @@ export const createPoster = async (
     const cleanOccasion = templateId.replace(/^seed[-_]/i, '').replace(/[-]/g, '_');
     template = await Template.findOne({
       $or: [
-        { occasionType: cleanOccasion },
-        { occasionType: templateId },
+        { occasionType: cleanOccasion as any },
+        { occasionType: templateId as any },
       ],
     });
   }

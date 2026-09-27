@@ -21,17 +21,17 @@ export const getTemplates = async (req: Request, res: Response) => {
 };
 
 export const getTemplateById = async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = String(req.params.id);
 
-  let template = null;
+  let template: any = null;
   if (mongoose.isValidObjectId(id)) {
     template = await Template.findById(id);
   }
   if (!template) {
     const cleanOccasion = id.replace(/^seed[-_]/i, '').replace(/[-]/g, '_');
     template = await Template.findOne({
-      $or: [{ occasionType: cleanOccasion }, { occasionType: id }],
-    });
+      $or: [{ occasionType: cleanOccasion as any }, { occasionType: id as any }],
+    } as any);
   }
   if (!template) {
     return ApiResponse.notFound(res, 'Template not found');
