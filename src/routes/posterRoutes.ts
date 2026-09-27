@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   createPoster,
   deletePoster,
+  downloadPoster,
   getPosterById,
   getUserPosters,
   polishText,
@@ -16,6 +17,7 @@ const router = Router();
 router.post('/polish-text', polishText);
 router.post('/', requireAuth, validateRequest({ body: createPosterSchema }), createPoster);
 router.get('/my-posters', requireAuth, getUserPosters);
+router.get('/:id/download', downloadPoster);
 router.get('/:id', requireAuth, getPosterById);
 router.post(
   '/:id/regenerate',

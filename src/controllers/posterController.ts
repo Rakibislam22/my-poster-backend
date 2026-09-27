@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
+import fs from 'fs';
 import mongoose from 'mongoose';
+import path from 'path';
 import { GenerationLog } from '../models/GenerationLog';
 import { Poster } from '../models/Poster';
 import { Template } from '../models/Template';
@@ -311,3 +313,48 @@ export const polishText = async (req: Request, res: Response) => {
     return ApiResponse.error(res, 'টেক্সট পলিশ করতে সমস্যা হয়েছে', 500, error.message);
   }
 };
+
+export const downloadPoster = async (req: Request<{ id: string }>, res: Response) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return ApiResponse.notFound(res, 'পোস্টার পাওয়া যায়নি');
+    }
+
+    const poster = await Poster.findById(id);
+    if (!poster || !poster.generatedImageUrl) {
+      return ApiResponse.notFound(res, 'পোস্টার পাওয়া যায়নি');
+    }
+
+    const candidateName = poster.formData?.candidateName || 'poster';
+    const safeCandidateName = candidateName.replace(/[\s/\\?%*:|"<>]+/g, '_');
+    const filename = `poster-${safeCandidateName}.png`;
+
+    // 1. If stored locally in /uploads/
+    if (poster.generatedImageUrl.includes('/uploads/')) {
+      const match = poster.generatedImageUrl.match(/\/uploads\/(.+)$/);
+      if (match && match[1]) {
+        const localPath = path.resolve(__dirname, '../../uploads', match[1]);
+        if (fs.existsSync(localPath)) {
+          return res.download(localPath, filename);
+        }
+      }
+    }
+
+    // 2. If Cloudinary, redirect with fl_attachment transformation to force attachment header
+    if (poster.generatedImageUrl.includes('res.cloudinary.com') && poster.generatedImageUrl.includes('/upload/')) {
+      const cleanName = encodeURIComponent(safeCandidateName);
+      const attachmentUrl = poster.generatedImageUrl.replace(
+        '/upload/',
+        `/upload/fl_attachment:poster-${cleanName}/`
+      );
+      return res.redirect(attachmentUrl);
+    }
+
+    // 3. Fallback: redirect directly
+    return res.redirect(poster.generatedImageUrl);
+  } catch (error: any) {
+    return ApiResponse.error(res, 'ডাউনলোড সম্পন্ন করা যায়নি', 500, error.message);
+  }
+};
+
