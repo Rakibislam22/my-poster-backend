@@ -439,6 +439,24 @@ export async function seedDatabase(force = false): Promise<void> {
       });
       console.log('👤 Demo user created: user@posterbabu.bd (pass: poster1234)');
     }
+
+    // Ensure Admin User exists
+    const adminEmail = 'admin@posterbabu.bd';
+    const existingAdmin = await User.findOne({ email: adminEmail });
+    if (!existingAdmin) {
+      const salt = await bcrypt.genSalt(10);
+      const passwordHash = await bcrypt.hash('admin1234', salt);
+      await User.create({
+        name: 'সুপার অ্যাডমিন',
+        email: adminEmail,
+        passwordHash,
+        role: 'admin',
+      });
+      console.log('🛡️ Admin user created: admin@posterbabu.bd (pass: admin1234)');
+    } else if (existingAdmin.role !== 'admin') {
+      existingAdmin.role = 'admin';
+      await existingAdmin.save();
+    }
   } catch (error) {
     console.error('⚠️ Seeding error:', error);
   }

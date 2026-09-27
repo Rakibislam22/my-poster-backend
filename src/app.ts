@@ -7,6 +7,7 @@ import { env } from './config/env';
 import { errorHandler } from './middlewares/errorHandler';
 import { notFoundHandler } from './middlewares/notFoundHandler';
 import { authLimiter, posterLimiter, uploadLimiter } from './middlewares/rateLimiter';
+import { adminRoutes } from './routes/adminRoutes';
 import { authRoutes } from './routes/authRoutes';
 import { healthRoutes } from './routes/healthRoutes';
 import { posterRoutes } from './routes/posterRoutes';
@@ -35,6 +36,7 @@ export const createApp = (): Express => {
   app.use('/api/upload', uploadLimiter, uploadRoutes);
   app.use('/api/templates', templateRoutes);
   app.use('/api/posters', posterLimiter, posterRoutes);
+  app.use('/api/admin', adminRoutes);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

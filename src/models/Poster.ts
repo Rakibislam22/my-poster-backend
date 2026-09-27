@@ -1,6 +1,7 @@
 import mongoose, { Document, Schema, Types } from 'mongoose';
 
 export type PosterStatus = 'pending' | 'processing' | 'completed' | 'failed';
+export type ModerationStatus = 'pending' | 'approved' | 'rejected' | 'flagged';
 
 export interface IPosterFormData {
   occasionType?: string;
@@ -26,6 +27,11 @@ export interface IPoster extends Document {
   generatedImageUrl?: string;
   previewUrl?: string;
   status: PosterStatus;
+  moderationStatus: ModerationStatus;
+  moderationNotes?: string;
+  flaggedReason?: string;
+  moderatedBy?: Types.ObjectId;
+  moderatedAt?: Date;
   regenerationCount: number;
   errorMessage?: string;
   metadata?: Record<string, unknown>;
@@ -71,6 +77,27 @@ const PosterSchema = new Schema<IPoster>(
       enum: ['pending', 'processing', 'completed', 'failed'],
       default: 'pending',
       index: true,
+    },
+    moderationStatus: {
+      type: String,
+      enum: ['pending', 'approved', 'rejected', 'flagged'],
+      default: 'pending',
+      index: true,
+    },
+    moderationNotes: {
+      type: String,
+      trim: true,
+    },
+    flaggedReason: {
+      type: String,
+      trim: true,
+    },
+    moderatedBy: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+    },
+    moderatedAt: {
+      type: Date,
     },
     regenerationCount: {
       type: Number,
