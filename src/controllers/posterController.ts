@@ -288,3 +288,26 @@ export const deletePoster = async (req: Request<{ id: string }>, res: Response) 
   await Poster.findByIdAndDelete(id);
   return ApiResponse.success(res, { id }, 'Poster deleted successfully');
 };
+
+export const polishText = async (req: Request, res: Response) => {
+  try {
+    const { occasionType, candidateName, designation, party, area, headlineBangla, customNotes } = req.body;
+    const aiResult = await geminiService.generatePosterCopy({
+      occasionType: occasionType || 'campaign',
+      candidateName: candidateName || 'প্রার্থীর নাম',
+      designation,
+      party,
+      area,
+      customNotes,
+      userHeadline: headlineBangla,
+    });
+    return ApiResponse.success(res, {
+      headlineBangla: aiResult.headlineBangla,
+      footerCreditBangla: aiResult.footerCreditBangla,
+      campaignMarka: aiResult.campaignMarka,
+      isAiGenerated: aiResult.isAiGenerated,
+    }, 'টেক্সট সফলভাবে পলিশ করা হয়েছে');
+  } catch (error: any) {
+    return ApiResponse.error(res, 'টেক্সট পলিশ করতে সমস্যা হয়েছে', 500, error.message);
+  }
+};

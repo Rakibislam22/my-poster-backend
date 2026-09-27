@@ -4,6 +4,7 @@ import {
   deletePoster,
   getPosterById,
   getUserPosters,
+  polishText,
   regeneratePoster,
 } from '../controllers/posterController';
 import { requireAuth } from '../middlewares/authMiddleware';
@@ -12,6 +13,7 @@ import { createPosterSchema, regeneratePosterSchema } from '../validators/poster
 
 const router = Router();
 
+router.post('/polish-text', polishText);
 router.post('/', requireAuth, validateRequest({ body: createPosterSchema }), createPoster);
 router.get('/my-posters', requireAuth, getUserPosters);
 router.get('/:id', requireAuth, getPosterById);

@@ -48,9 +48,9 @@ export const seedTemplatesData = [
       ],
       candidateSlot: {
         x: 285,
-        y: 345,
-        width: 440,
-        height: 440,
+        y: 406,
+        width: 426,
+        height: 426,
         blendBottom: false,
       },
       textSlots: {
@@ -70,7 +70,7 @@ export const seedTemplatesData = [
           fontSize: 36,
           color: '#FFFFFF',
           align: 'center' as const,
-          y: 600,
+          y: 640,
           defaultBangla: 'মোঃ রাকিবুল হাসান',
         },
         designation: {
@@ -79,7 +79,7 @@ export const seedTemplatesData = [
           fontSize: 22,
           color: '#FFD700',
           align: 'center' as const,
-          y: 645,
+          y: 685,
           defaultBangla: 'সহ-সভাপতি পদপ্রার্থী',
         },
         party: {
@@ -249,10 +249,10 @@ export const seedTemplatesData = [
         },
       ],
       candidateSlot: {
-        x: 300,
-        y: 360,
-        width: 450,
-        height: 450,
+        x: 277,
+        y: 434,
+        width: 426,
+        height: 426,
         blendBottom: false,
       },
       textSlots: {
@@ -272,7 +272,7 @@ export const seedTemplatesData = [
           fontSize: 36,
           color: '#FFFFFF',
           align: 'center' as const,
-          y: 625,
+          y: 655,
           defaultBangla: 'আলহাজ্ব মোঃ রফিকুল ইসলাম',
         },
         designation: {
@@ -281,7 +281,7 @@ export const seedTemplatesData = [
           fontSize: 22,
           color: '#FFD700',
           align: 'center' as const,
-          y: 670,
+          y: 700,
           defaultBangla: 'পবিত্র ঈদুল ফিতরের শুভেচ্ছা ও মোবারকবাদ',
         },
         party: {
@@ -350,10 +350,10 @@ export const seedTemplatesData = [
         },
       ],
       candidateSlot: {
-        x: 295,
-        y: 350,
-        width: 456,
-        height: 456,
+        x: 287,
+        y: 414,
+        width: 428,
+        height: 428,
         blendBottom: false,
       },
       textSlots: {
@@ -373,7 +373,7 @@ export const seedTemplatesData = [
           fontSize: 36,
           color: '#FFFFFF',
           align: 'center' as const,
-          y: 620,
+          y: 645,
           defaultBangla: 'মরহুম আব্দুল কাদের মিয়া',
         },
         designation: {
@@ -382,7 +382,7 @@ export const seedTemplatesData = [
           fontSize: 22,
           color: '#FFD700',
           align: 'center' as const,
-          y: 665,
+          y: 690,
           defaultBangla: 'তাঁর বিদেহী আত্মার মাগফিরাত কামনা করছি',
         },
         party: {
