@@ -87,43 +87,43 @@ class CanvasService {
           { cx: 1063, cy: 145, r: 92 },
         ],
         banner: { cx: 250, yName: 585, yDes: 630, angle: -0.05 },
-        headline: { cx: 930, cy: 695, maxWidth: 440 },
+        headline: { cx: 930, cy: 695, maxWidth: 460 },
         defaultCredit: 'প্রচারে: সর্বস্তরের সচেতন ও দেশপ্রেমিক কর্মীসমাজ',
         defaultDes: 'ধানের শীষ মার্কায় ভোট দিন',
       },
       victory_day: {
-        candidate: { cx: 285, cy: 345, r: 220 },
+        candidate: { cx: 285, cy: 406, r: 213 },
         leaders: [
           { cx: 647, cy: 145, r: 92 },
           { cx: 841, cy: 145, r: 92 },
           { cx: 1050, cy: 145, r: 92 },
         ],
-        banner: { cx: 245, yName: 600, yDes: 645, angle: -0.04 },
-        headline: { cx: 930, cy: 695, maxWidth: 440 },
+        banner: { cx: 245, yName: 640, yDes: 685, angle: -0.04 },
+        headline: { cx: 930, cy: 695, maxWidth: 460 },
         defaultCredit: 'প্রচারে: সর্বস্তরের দেশপ্রেমিক জনগণ',
         defaultDes: 'সহ-সভাপতি পদপ্রার্থী',
       },
       condolence: {
-        candidate: { cx: 295, cy: 350, r: 228 },
+        candidate: { cx: 287, cy: 414, r: 214 },
         leaders: [
           { cx: 630, cy: 155, r: 95 },
           { cx: 840, cy: 155, r: 95 },
           { cx: 1055, cy: 155, r: 95 },
         ],
-        banner: { cx: 240, yName: 620, yDes: 665, angle: -0.04 },
-        headline: { cx: 930, cy: 695, maxWidth: 440 },
+        banner: { cx: 240, yName: 645, yDes: 690, angle: -0.04 },
+        headline: { cx: 930, cy: 695, maxWidth: 460 },
         defaultCredit: 'শোক প্রকাশে: পরিবারবর্গ ও সর্বস্তরের শুভাকাঙ্ক্ষী',
         defaultDes: 'তাঁর বিদেহী আত্মার মাগফিরাত কামনা করছি',
       },
       eid: {
-        candidate: { cx: 300, cy: 360, r: 225 },
+        candidate: { cx: 277, cy: 434, r: 213 },
         leaders: [
           { cx: 635, cy: 150, r: 92 },
           { cx: 842, cy: 150, r: 92 },
           { cx: 1060, cy: 150, r: 92 },
         ],
-        banner: { cx: 245, yName: 625, yDes: 670, angle: -0.04 },
-        headline: { cx: 930, cy: 695, maxWidth: 440 },
+        banner: { cx: 245, yName: 655, yDes: 700, angle: -0.04 },
+        headline: { cx: 930, cy: 695, maxWidth: 460 },
         defaultCredit: 'শুভেচ্ছান্তে: সর্বস্তরের এলাকাবাসী',
         defaultDes: 'পবিত্র ঈদুল ফিতরের শুভেচ্ছা ও মোবারকবাদ',
       },
@@ -310,7 +310,7 @@ class CanvasService {
     ctx.save();
 
     // 1. Determine best font size and multi-line word wrap
-    let fontSize = 23;
+    let fontSize = 21;
     const words = text.split(/\s+/);
 
     const testSplit = (size: number): string[] => {
@@ -332,16 +332,16 @@ class CanvasService {
 
     let lines = testSplit(fontSize);
     if (lines.length > 2) {
-      fontSize = 20;
+      fontSize = 19;
       lines = testSplit(fontSize);
-      if (lines.length > 2) {
-        fontSize = 18;
+      if (lines.length > 3) {
+        fontSize = 16.5;
         lines = testSplit(fontSize);
       }
     }
 
     ctx.font = `bold ${fontSize}px "Hind Siliguri", sans-serif`;
-    const lineHeight = fontSize * 1.35;
+    const lineHeight = fontSize * 1.4;
     const totalTextHeight = lines.length * lineHeight;
 
     // 2. Measure max line width for badge

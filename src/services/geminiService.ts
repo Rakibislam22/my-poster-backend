@@ -57,10 +57,10 @@ class GeminiService {
         const parsed = JSON.parse(text);
 
         return {
-          headlineBangla: parsed.headlineBangla || params.userHeadline || this.getDefaultHeadline(params.occasionType),
+          headlineBangla: parsed.headlineBangla || this.getDefaultHeadline(params.occasionType, params),
           subtitleBangla: parsed.subtitleBangla || this.getDefaultSubtitle(params),
           candidateCallout: parsed.candidateCallout || `${params.candidateName}-কে`,
-          campaignMarka: parsed.campaignMarka || this.detectDefaultMarka(params),
+          campaignMarka: parsed.campaignMarka || parsed.marka || this.detectDefaultMarka(params),
           footerCreditBangla: parsed.footerCreditBangla || this.getDefaultFooter(params),
           promptUsed: prompt,
           tokensUsed: response.usageMetadata?.totalTokenCount || 0,
@@ -72,7 +72,7 @@ class GeminiService {
     }
 
     return {
-      headlineBangla: params.userHeadline || this.getDefaultHeadline(params.occasionType),
+      headlineBangla: this.getDefaultHeadline(params.occasionType, params),
       subtitleBangla: this.getDefaultSubtitle(params),
       candidateCallout: `${params.candidateName}-কে`,
       campaignMarka: this.detectDefaultMarka(params),
@@ -84,68 +84,71 @@ class GeminiService {
   }
 
   private buildPrompt(params: SloganGenerationParams): string {
-    return `You are the Lead Art Director and Chief Political Copywriter for authentic, professional Bangladeshi posters (1200x1600 px print-ready standard).
-Your mission is to generate punchy, dignified, grammatically flawless Bengali copy that fits into balanced graphic design slots without text overlapping, repetition, or overflow.
+    const occasionTitleMap: Record<string, string> = {
+      campaign: 'নির্বাচনী প্রচারণা ও ভোট প্রার্থনা',
+      victory_day: 'মহান বিজয় দিবস ও জাতীয় শ্রদ্ধাঞ্জলি',
+      eid: 'পবিত্র ঈদ-উল-ফিতর ও ঈদ শুভেচ্ছা',
+      condolence: 'শোক প্রস্তাব, স্মরণসভা ও দোয়া প্রার্থনা',
+    };
+    const occasionTitle = occasionTitleMap[params.occasionType] || params.occasionType;
+
+    return `You are an elite Bangladeshi Art Director, Senior Campaign Strategist, and Master Bengali Copywriter/Speechwriter.
+Your task is to write an exceptionally polished, context-rich, dignified, and compelling Bengali slogan / message statement ("headlineBangla") for a high-profile banner message badge.
 
 POSTER SPECIFICATIONS:
-- Occasion Type: ${params.occasionType}
+- Occasion Type: ${params.occasionType} (${occasionTitle})
 - Candidate Name: ${params.candidateName}
-- Designation / Role: ${params.designation || 'Not specified'}
+- Designation / Title: ${params.designation || 'Not specified'}
 - Political Party / Organization: ${params.party || 'Not specified'}
-- Electoral Area / Constituency: ${params.area || 'Not specified'}
-- User Preferred Headline: ${params.userHeadline || 'None provided'}
-- Custom Notes / Instructions: ${params.customNotes || 'None'}
+- Constituency / Electoral Area: ${params.area || 'Not specified'}
+- User's Raw Note / Topic Idea: ${params.userHeadline || params.customNotes || 'None provided'}
+- Custom Notes: ${params.customNotes || 'None'}
 
-STRICT ART DIRECTION & COPY RULES:
-1. "headlineBangla" (Main Title):
-   - Strictly 3 to 6 words.
-   - For 'victory_day': Occasion name only, e.g., "১৬ই ডিসেম্বর মহান বিজয় দিবস".
-   - For 'campaign': Electoral appeal title, e.g., "আসন্ন জাতীয় সংসদ নির্বাচনে মনোনীত প্রার্থী".
-   - For 'eid': Festive greeting title, e.g., "পবিত্র ঈদ-উল-ফিতর মোবারক".
-   - For 'condolence': Solemn tribute title, e.g., "বিনম্র শ্রদ্ধা ও শোক প্রস্তাব".
-   - CRITICAL: Do NOT merge the tribute/sub-slogan into this field! Keep it short so it fits the top ribbon without wrapping into 3 lines.
-
-2. "subtitleBangla" (Secondary Slogan / Tribute):
-   - Strictly 3 to 6 words.
-   - For 'victory_day': e.g., "বীর শহীদদের প্রতি বিনম্র শ্রদ্ধা" or "বীর বাঙালির রক্তে রাঙানো অহংকার".
-   - For 'campaign': e.g., "${params.area ? params.area + ' আসনে ' : ''}জনগণের দোয়া ও সমর্থন প্রার্থী".
-   - For 'eid': e.g., "অনাবিল আনন্দ ও শান্তির শুভেচ্ছা".
-   - For 'condolence': e.g., "বিদেহী আত্মার মাগফিরাত কামনায়".
-   - CRITICAL CONSTRAINT: Must NEVER repeat any word that already appears in "headlineBangla"!
-
-3. "candidateCallout":
-   - For campaign: "${params.candidateName}-কে"
-   - For festive/condolence: "${params.candidateName}"
-
-4. "campaignMarka":
-   - The electoral symbol in Bengali (e.g., "ধানের শীষ", "নৌকা", "লাঙ্গল", "দাঁড়িপাল্লা", "হাতপাখা" based on party).
+STRICT COPYWRITING RULES FOR "headlineBangla":
+1. LENGTH & DEPTH: 10 to 18 words (forming 2 to 3 compact, rhythmic lines when rendered).
+2. DO NOT output a short 3-word title (e.g. "মহান বিজয় দিবস" or "আসন্ন নির্বাচনে প্রার্থী")! The poster already displays the occasion title in large 3D typography.
+3. DETAILED & POLISHED:
+   - If the user provided a raw input or topic (e.g. "উন্নয়নের জন্য ভোট দিন" or "এলাকার রাস্তাঘাট ঠিক করবো"), DO NOT simply repeat it verbatim! Elevate, expand, and polish it into an eloquent, authoritative, and persuasive Bengali statement.
+   - Weave in the specific details provided: candidate's area (${params.area || 'এলাকা'}), party/values, candidate's dedication, public rights, people's welfare, or national spirit.
+4. OCCASION-SPECIFIC TONE & SAMPLES:
+   - For 'campaign': Inspiring electoral pledge on democracy, public rights, area development, and honesty.
+     Example: "${params.area ? params.area + ' এর ' : ''}মাটি ও মানুষের ভাগ্যোন্নয়নে, গণতন্ত্র ও জনতার অধিকার প্রতিষ্ঠায় ${params.candidateName}-কে ধানের শীষে মূল্যবান ভোট দিয়ে জয়যুক্ত করুন।"
+   - For 'victory_day': Stirring patriotic tribute honoring martyrs and pledging national unity and prosperity.
+     Example: "মহান বিজয়ের রক্তস্নাত শপথে বীর শহীদদের স্মরণে সাম্য, সুবিচার ও সমৃদ্ধ বাংলাদেশ গড়ার দৃপ্ত অঙ্গীকার।"
+   - For 'eid': Warm, heartfelt greeting for citizens and local residents wishing peace and brotherhood.
+     Example: "পবিত্র ঈদুল ফিতরের মহিমান্বিত আলোয় ভরে উঠুক প্রতিটি হৃদয়—${params.area ? params.area + 'বাসীসহ ' : ''}সবাইকে ঈদের আন্তরিক শুভেচ্ছা ও ঈদ মোবারক।"
+   - For 'condolence': Solemn, respectful tribute praying for eternal peace and remembering lifelong service.
+     Example: "মরহুমের কর্মময় জীবনের আদর্শ ও নিঃস্বার্থ সমাজসেবাকে বিনম্র শ্রদ্ধায় স্মরণ করছি; মহান আল্লাহ তাঁকে জান্নাতুল ফেরদৌস নসিব করুন।"
 
 5. "footerCreditBangla":
-   - Professional promoter line starting with "প্রচারে:", e.g., "প্রচারে: ${params.party ? params.party + ' ও ' : ''}সর্বস্তরের দেশপ্রেমিক কর্মীসমাজ".
+   - Dignified promoter credit line starting with "প্রচারে:", e.g. "প্রচারে: ${params.party ? params.party + ' ও ' : ''}${params.area ? params.area + '-র ' : ''}সর্বস্তরের সচেতন ও দেশপ্রেমিক জনগণ".
+
+6. "campaignMarka":
+   - The electoral symbol in Bengali (e.g. "ধানের শীষ", "নৌকা", "লাঙ্গল", "দাঁড়িপাল্লা", "হাতপাখা").
 
 Return ONLY a valid JSON object matching this schema:
 {
-  "headlineBangla": "Concise 3-6 words main occasion title",
-  "subtitleBangla": "Unique 3-6 words sub-slogan (NO repetition of headline words)",
-  "candidateCallout": "Short candidate name callout",
-  "campaignMarka": "Name of the election symbol in Bengali",
-  "footerCreditBangla": "Promoter line starting with প্রচারে:"
+  "headlineBangla": "Polished, detailed, 10-18 words eloquent Bengali message",
+  "footerCreditBangla": "Promoter line starting with প্রচারে:",
+  "campaignMarka": "Election symbol name in Bengali"
 }`;
   }
 
-  private getDefaultHeadline(occasionType: string): string {
+  private getDefaultHeadline(occasionType: string, params?: SloganGenerationParams): string {
+    const areaPrefix = params?.area ? `${params.area} এর ` : '';
+    const candName = params?.candidateName ? `${params.candidateName}-কে ` : '';
     switch (occasionType) {
       case 'victory_day':
-        return '১৬ই ডিসেম্বর মহান বিজয় দিবস উপলক্ষে বিনম্র শ্রদ্ধা';
+        return 'মহান বিজয়ের রক্তস্নাত শপথে বীর শহীদদের স্মরণে সাম্য, সুবিচার ও সমৃদ্ধ বাংলাদেশ গড়ার দৃপ্ত অঙ্গীকার।';
       case 'campaign':
-        return 'আসন্ন জাতীয় সংসদ নির্বাচনে মনোনীত প্রার্থী';
+        return `${areaPrefix}মাটি ও মানুষের ভাগ্যোন্নয়নে, গণতন্ত্র ও নাগরিক অধিকার প্রতিষ্ঠায় ${candName}ভোট দিয়ে জয়যুক্ত করুন।`;
       case 'condolence':
-        return 'বিনম্র শ্রদ্ধা ও শোক প্রস্তাব — বিদেহী আত্মার মাগফিরাত কামনায়';
+        return 'মরহুমের কর্মময় জীবনের আদর্শ ও নিঃস্বার্থ সমাজসেবাকে বিনম্র শ্রদ্ধায় স্মরণ করছি; আল্লাহ তাঁকে জান্নাত নসিব করুন।';
       case 'eid':
-        return 'পবিত্র ঈদ উপলক্ষে সবাইকে জানাই শুভেচ্ছা ও ঈদ মোবারক';
+        return `পবিত্র ঈদুল ফিতরের অনাবিল আনন্দ ও শান্তির বারতা ছড়িয়ে পড়ুক প্রতিটি ঘরে—${areaPrefix}সবাইকে আন্তরিক ঈদ মোবারক।`;
       case 'greetings':
       default:
-        return 'নতুন বছর ও সমৃদ্ধির শুভকামনায় আন্তরিক শুভেচ্ছা';
+        return 'নতুন উদ্দীপনায় সমৃদ্ধি, ঐক্য ও মানবিক মূল্যবোধের সমাজ বিনির্মাণে সবাইকে জানাই আন্তরিক শুভেচ্ছা।';
     }
   }
 
