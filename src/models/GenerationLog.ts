@@ -38,7 +38,7 @@ const GenerationLogSchema = new Schema<IGenerationLog>(
     },
     geminiModel: {
       type: String,
-      default: 'gemini-1.5-flash',
+      default: 'gemini-2.5-flash',
     },
     success: {
       type: Boolean,
